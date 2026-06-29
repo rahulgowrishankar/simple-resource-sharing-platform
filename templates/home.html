@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin-bottom: 28px;">
+    <h1 style="font-family:'Syne',sans-serif; font-size:28px; font-weight:800; color:var(--ink); letter-spacing:-.5px; margin-bottom:4px;">
+        Academic Resources
+    </h1>
+    <p style="color:var(--ink-3); font-size:14px;">Browse and download verified course materials for Kumaraguru College of Technology.</p>
+</div>
+
+<!-- SEARCH BAR -->
+<form method="GET" action="{{ url_for('home') }}"
+      style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:28px;">
+    <input  type="text"   name="q"        placeholder="Search by title…"
+            value="{{ search_query }}"
+            class="input" style="width:220px; flex-shrink:0;">
+
+    <select name="semester" onchange="this.form.submit()" class="select" style="width:160px; flex-shrink:0;">
+        <option value="">All Semesters</option>
+        {% for n in range(1,9) %}
+            <option value="{{ n }}" {% if selected_semester == n|string %}selected{% endif %}>Semester {{ n }}</option>
+        {% endfor %}
+    </select>
+
+    <select name="subject" onchange="this.form.submit()" class="select" style="width:230px; flex-shrink:0;">
+        <option value="">All Subjects</option>
+        {% for sub in available_subjects %}
+            <option value="{{ sub }}" {% if selected_subject == sub %}selected{% endif %}>{{ sub }}</option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary">Search</button>
+
+    {% if search_query or selected_semester or selected_subject %}
+        <a href="{{ url_for('home') }}" class="btn btn-outline">Clear</a>
+    {% endif %}
+</form>
+
+<!-- RESOURCE COUNT -->
+{% if resources %}
+<p style="font-size:13px; color:var(--ink-3); margin-bottom:16px;">
+    Showing <strong style="color:var(--ink);">{{ resources|length }}</strong> resource{{ 's' if resources|length != 1 else '' }}
+</p>
+{% endif %}
+
+<!-- RESOURCE LIST -->
+{% if resources %}
+    {% for r in resources %}
+    <div class="card" style="padding:22px 24px; margin-bottom:14px; transition: box-shadow .15s;"
+         onmouseover="this.style.boxShadow='var(--shadow-md)'"
+         onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:10px;">
+            <div>
+                <h3 style="font-size:16px; font-weight:700; color:var(--ink); margin-bottom:5px;">{{ r["title"] }}</h3>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                    <span class="badge badge-blue">Sem {{ r["semester"] }}</span>
+                    <span style="font-size:13px; color:var(--ink-3);">📚 <strong style="color:var(--ink-2);">{{ r["subject"] }}</strong></span>
+                    <span style="font-size:13px; color:var(--ink-3);">· by <em>{{ r["uploaded_by"] }}</em></span>
+                </div>
+            </div>
+
+            <!-- Rating display -->
+            <div style="text-align:right; flex-shrink:0;">
+                {% if r.avg_rating %}
+                    <div style="font-size:20px; font-weight:800; color:var(--gold); line-height:1;">{{ r.avg_rating }}</div>
+                    <div style="font-size:11px; color:var(--ink-3); margin-top:2px;">/ 5 rating</div>
+                {% else %}
+                    <div style="font-size:12px; color:var(--ink-3); font-style:italic;">No rating yet</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr class="divider" style="margin:14px 0;">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <a href="{{ url_for('download', filename=r['filename']) }}" class="btn btn-dark btn-sm">
+                    ↓ Download
+                </a>
+
+                {% if session.get('user_name') and session.get('user_name') == r['uploaded_by'] %}
+                    <a href="{{ url_for('delete_resource', resource_id=r['id']) }}"
+                       onclick="return confirm('Delete this resource permanently?');"
+                       class="btn btn-danger btn-sm">Remove</a>
+                {% endif %}
+            </div>
+
+            <!-- Star rating form -->
+            <form method="POST" action="{{ url_for('rate_resource', resource_id=r.id) }}"
+                  style="display:flex; gap:8px; align-items:center; margin:0;">
+                <select name="rating" class="select" style="width:160px; height:36px; font-size:13px;">
+                    <option value="5">★★★★★  Excellent (5)</option>
+                    <option value="4">★★★★☆  Good (4)</option>
+                    <option value="3">★★★☆☆  Average (3)</option>
+                    <option value="2">★★☆☆☆  Fair (2)</option>
+                    <option value="1">★☆☆☆☆  Poor (1)</option>
+                </select>
+                <button type="submit" class="btn btn-outline btn-sm">Rate</button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+
+{% else %}
+    <div class="empty">
+        <div class="empty-icon">📂</div>
+        <div class="empty-title">No resources found</div>
+        <div class="empty-sub">Try adjusting your filters, or be the first to upload one.</div>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload a Resource</a>
+    </div>
+{% endif %}
+
+{% endblock %}

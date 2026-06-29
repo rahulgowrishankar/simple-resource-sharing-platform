@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin-bottom:28px; display:flex; align-items:flex-end; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+    <div>
+        <h1 style="font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:var(--ink); margin-bottom:4px;">My Uploads</h1>
+        <p style="color:var(--ink-3); font-size:14px;">Track the status of everything you've shared.</p>
+    </div>
+    <a href="{{ url_for('upload') }}" class="btn btn-primary">+ New Upload</a>
+</div>
+
+{% if resources %}
+    {% for r in resources %}
+    <div class="card" style="padding:20px 24px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; transition:box-shadow .15s;"
+         onmouseover="this.style.boxShadow='var(--shadow-md)'"
+         onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
+        <div style="display:flex; align-items:center; gap:16px; flex:1; min-width:0;">
+            <div style="width:40px; height:40px; border-radius:8px; background:var(--surface-2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                📄
+            </div>
+            <div style="min-width:0;">
+                <h3 style="font-size:15px; font-weight:700; color:var(--ink); margin-bottom:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    {{ r["title"] }}
+                </h3>
+                <p style="font-size:13px; color:var(--ink-3); margin:0;">
+                    <strong style="color:var(--ink-2);">{{ r["subject"] }}</strong>
+                    · Semester {{ r["semester"] }}
+                </p>
+            </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+            {% if r["status"] == "approved" %}
+                <span class="badge badge-green">✓ Approved</span>
+            {% else %}
+                <span class="badge badge-gold">⏳ Pending</span>
+            {% endif %}
+
+            <a href="{{ url_for('delete_resource', resource_id=r['id']) }}"
+               onclick="return confirm('Delete this resource?');"
+               class="btn btn-danger btn-sm">Delete</a>
+        </div>
+    </div>
+    {% endfor %}
+
+{% else %}
+    <div class="empty">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Nothing uploaded yet</div>
+        <div class="empty-sub">Share your notes or materials with your classmates.</div>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary">Upload your first resource</a>
+    </div>
+{% endif %}
+
+{% endblock %}

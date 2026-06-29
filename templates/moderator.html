@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="margin-bottom:28px;">
+    <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(251,191,36,.1); border:1px solid rgba(251,191,36,.25); border-radius:20px; padding:4px 12px; font-size:12px; font-weight:700; color:#fbbf24; margin-bottom:12px; letter-spacing:.3px;">
+        🛡 MODERATOR
+    </div>
+    <h1 style="font-family:'Syne',sans-serif; font-size:26px; font-weight:800; color:var(--ink); margin-bottom:4px;">Review Queue</h1>
+    <p style="color:var(--ink-3); font-size:14px;">
+        {% if pending %}
+            <strong style="color:var(--ink);">{{ pending|length }}</strong> upload{{ 's' if pending|length != 1 else '' }} waiting for review.
+        {% else %}
+            You're all caught up — no pending uploads.
+        {% endif %}
+    </p>
+</div>
+
+{% if pending %}
+    {% for r in pending %}
+    <div class="card" style="padding:20px 24px; margin-bottom:12px; transition:box-shadow .15s;"
+         onmouseover="this.style.boxShadow='var(--shadow-md)'"
+         onmouseout="this.style.boxShadow='var(--shadow-sm)'">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div style="display:flex; align-items:center; gap:16px; flex:1; min-width:0;">
+                <div style="width:42px; height:42px; border-radius:8px; background:var(--surface-2); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">
+                    📄
+                </div>
+                <div>
+                    <h3 style="font-size:15px; font-weight:700; color:var(--ink); margin-bottom:4px;">{{ r["title"] }}</h3>
+                    <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-3); flex-wrap:wrap;">
+                        <span>📚 <strong style="color:var(--ink-2);">{{ r["subject"] }}</strong></span>
+                        <span>· Sem {{ r["semester"] }}</span>
+                        <span>· by <em>{{ r["uploaded_by"] }}</em></span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px; flex-shrink:0;">
+                <a href="{{ url_for('approve_resource', resource_id=r['id']) }}"
+                   class="btn btn-success btn-sm">✓ Approve</a>
+                <a href="{{ url_for('reject_resource', resource_id=r['id']) }}"
+                   onclick="return confirm('Reject and permanently delete this upload?');"
+                   class="btn btn-danger btn-sm">✕ Reject</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+{% else %}
+    <div class="empty">
+        <div class="empty-icon">🎉</div>
+        <div class="empty-title">All clear!</div>
+        <div class="empty-sub">No pending submissions right now. Check back later.</div>
+    </div>
+{% endif %}
+
+{% endblock %}
